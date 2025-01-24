@@ -32,7 +32,7 @@ import {
 import { DirectClient } from "@elizaos/client-direct";
 import { bootstrapPlugin } from "@elizaos/plugin-bootstrap";
 import { createNodePlugin } from "@elizaos/plugin-node";
-import { devSchoolPlugin } from "@elizaos/plugin-devschool";
+import { starknetPlugin } from "@elizaos/plugin-starknet";
 import Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
@@ -40,8 +40,11 @@ import { fileURLToPath } from "url";
 import yargs from "yargs";
 import net from "net";
 
-import { userDataCompletionProvider, userDataProvider } from "./userDataProvider";
-import { userDataEvaluator } from "./userDataEvaluator";
+import {
+    labelDataCompletionProvider,
+    userDataProvider,
+} from "./labelDataProvider";
+import { labelDataEvaluator } from "./labelDataEvaluator";
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
@@ -492,15 +495,11 @@ export async function createAgent(
         databaseAdapter: db,
         token,
         modelProvider: character.modelProvider,
-        evaluators: [userDataEvaluator],
+        evaluators: [labelDataEvaluator],
         character,
         // character.plugins are handled when clients are added
-        plugins: [
-            bootstrapPlugin,
-            nodePlugin,
-            //devSchoolPlugin, LEZIONE 2
-        ].filter(Boolean),
-        providers: [userDataProvider, userDataCompletionProvider],
+        plugins: [bootstrapPlugin, nodePlugin, starknetPlugin].filter(Boolean),
+        providers: [userDataProvider, labelDataCompletionProvider],
         actions: [],
         services: [],
         managers: [],

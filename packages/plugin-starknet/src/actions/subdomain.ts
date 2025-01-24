@@ -118,12 +118,12 @@ export default {
         // Validate transfer content
         if (!isSubdomainCreation(content)) {
             elizaLogger.error("Invalid content for CREATE_SUBDOMAIN action.");
-            if (callback) {
+            /* if (callback) {
                 callback({
                     text: "Not enough information to create subdomain. Please respond with your domain and the subdomain to create.",
                     content: { error: "Invalid subdomain creation content" },
                 });
-            }
+            } */
             return false;
         }
 
