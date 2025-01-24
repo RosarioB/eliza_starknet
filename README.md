@@ -1,12 +1,35 @@
-# eliza_devschool
+# eliza_starknet
+An agentic application based on Eliza AI16Z that creates labels (NFTs) on Starknet. It includes the Starknet-Eliza plugin so it can transfer, swap and deploy tokens.
 
-To run the application ind evelopment mode, including the build execute:
-```bash
-pnpm run dev --characters="./characters/dobby.character.json"
+In the `.env` file put:
+
+```
+STARKNET_ADDRESS=<your_starknet_address_here>
+STARKNET_PRIVATE_KEY=<your_private_key_here>
+STARKNET_RPC_URL=<your_rpc_url_here>
+PINATA_JWT=<your_pinata_jwt_here>
+PINATA_GATEWAY_URL=<your_pinata_gateway_url_here>
+```
+
+In the file `labels.ts` set the constant `DEPLOYED_CONTRACT` with the address of the smart contract deployed on Starknet.
+
+Install dependencies and build:
+
+```
+pnpm i && pnpm build
+```
+To run the application in development mode, including the build execute:
+
+```
+pnpm run dev --characters="./characters/jack.character.json"
 ```
 Otherwise use the classical commands:
 
-`pnpm i && pnpm build && pnpm pnpm start --character="characters/dobby.character.json"`
+```
+pnpm start --character="characters/dobby.character.json"`
+```
+
+To interact with the agent open the browser at `http://localhost:5173`
 
 ## Eliza 🤖
 
