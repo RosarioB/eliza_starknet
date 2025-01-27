@@ -9,7 +9,6 @@ import {
 import { uploadJson } from "./pinata";
 import { mintLabel } from "./labels";
 
-// Define strict types for label data
 export interface LabelData {
     name: string | undefined;
     description: string | undefined;
@@ -17,7 +16,6 @@ export interface LabelData {
     lastUpdated: number | undefined;
 }
 
-// Initialize empty label data
 export const emptyLabelData: LabelData = {
     name: undefined,
     description: undefined,
@@ -25,7 +23,16 @@ export const emptyLabelData: LabelData = {
     lastUpdated: undefined,
 };
 
-// Helper functions
+export interface MintTxData {
+    txHash: string | undefined;
+    lastUpdated: number | undefined;
+}
+
+export const emptyMintTx: MintTxData = {
+    txHash: undefined,
+    lastUpdated: undefined,
+};
+
 const getCacheKey = (runtime: IAgentRuntime, labelId: string): string => {
     return `${runtime.character.name}/${labelId}/data`;
 };
@@ -45,7 +52,6 @@ export const isDataComplete = (data: LabelData): boolean => {
     return getMissingFields(data).length === 0;
 };
 
-// Evaluator Implementation
 export const labelDataEvaluator: Evaluator = {
     name: "GET_LABEL_DATA",
     similes: [
@@ -77,9 +83,13 @@ export const labelDataEvaluator: Evaluator = {
     handler: async (runtime: IAgentRuntime, message: Memory): Promise<void> => {
         try {
             const cacheKey = getCacheKey(runtime, message.userId);
-            const cachedData = (await runtime.cacheManager.get<LabelData>(
+            const cachedLabel = (await runtime.cacheManager.get<LabelData>(
                 cacheKey
             )) || { ...emptyLabelData };
+
+            const cachedMintTx = (await runtime.cacheManager.get<MintTxData>(
+                cacheKey
+            )) || { ...emptyMintTx };
 
             const extractionTemplate = `
                 Analyze the following conversation to extract label information.
@@ -107,29 +117,46 @@ export const labelDataEvaluator: Evaluator = {
 
             let dataUpdated = false;
 
-            // Update only undefined fields with new information
             for (const field of ["name", "description", "recipient"] as const) {
-                if (extractedInfo[field] && cachedData[field] === undefined) {
-                    cachedData[field] = extractedInfo[field];
+                if (extractedInfo[field] && cachedLabel[field] === undefined) {
+                    cachedLabel[field] = extractedInfo[field];
                     dataUpdated = true;
                 }
             }
 
             if (dataUpdated) {
-                cachedData.lastUpdated = Date.now();
-                await runtime.cacheManager.set(cacheKey, cachedData, {
-                    expires: Date.now() + 7 * 24 * 60 * 60 * 1000, // 1 week cache
+                cachedLabel.lastUpdated = Date.now();
+                await runtime.cacheManager.set(cacheKey, cachedLabel, {
+                    expires: Date.now() + 10 * 60 * 1000, // 10 minutes cache
                 });
             }
 
-            if (isDataComplete(cachedData)) {
+            if (isDataComplete(cachedLabel)) {
                 elizaLogger.success(
                     "Label data collection completed:",
-                    cachedData
+                    cachedLabel
                 );
-                // DO SOME API CALL OUT TO SOMETHING ELSE HERE!!!!
-                const ipfsHash = await uploadJson(cachedData.name, cachedData.description);
-                await mintLabel( cachedData.recipient, `ipfs://${ipfsHash}`);
+
+                const dataIpfsHash = await uploadJson(
+                    cachedLabel.name,
+                    cachedLabel.description
+                );
+                elizaLogger.success(
+                    `Uploaded JSON to IPFS with hash: ${dataIpfsHash}`
+                );
+                const dataIpfsUrl = `ipfs://${dataIpfsHash}`;
+                const mintTxHash = await mintLabel(
+                    cachedLabel.recipient,
+                    dataIpfsUrl
+                );
+                elizaLogger.success(
+                    `Minted label with transaction hash: ${mintTxHash}`
+                );
+                cachedMintTx.lastUpdated = Date.now();
+                cachedMintTx.txHash = mintTxHash;
+                await runtime.cacheManager.set(cacheKey, cachedMintTx, {
+                    expires: Date.now() + 10 * 60 * 1000, // 10 minutes cache
+                });
             }
         } catch (error) {
             elizaLogger.error("Error in labelDataEvaluator handler:", error);
@@ -174,7 +201,9 @@ export const labelDataEvaluator: Evaluator = {
             messages: [
                 {
                     user: "{{user1}}",
-                    content: { text: "I already own many  NFTs in my wallet 0x032e21f8277033fd4ddbb2127f5ebe74c7cdb09e36e72bd0071ad9bf6039b7bd" },
+                    content: {
+                        text: "I already own many  NFTs in my wallet 0x032e21f8277033fd4ddbb2127f5ebe74c7cdb09e36e72bd0071ad9bf6039b7bd",
+                    },
                 },
             ],
             outcome: "{}",

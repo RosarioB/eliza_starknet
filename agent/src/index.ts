@@ -40,10 +40,7 @@ import { fileURLToPath } from "url";
 import yargs from "yargs";
 import net from "net";
 
-import {
-    labelDataCompletionProvider,
-    userDataProvider,
-} from "./labelDataProvider";
+import { txLabelMintedProvider, labelDataProvider } from "./labelDataProvider";
 import { labelDataEvaluator } from "./labelDataEvaluator";
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
@@ -499,7 +496,7 @@ export async function createAgent(
         character,
         // character.plugins are handled when clients are added
         plugins: [bootstrapPlugin, nodePlugin, starknetPlugin].filter(Boolean),
-        providers: [userDataProvider, labelDataCompletionProvider],
+        providers: [labelDataProvider, txLabelMintedProvider],
         actions: [],
         services: [],
         managers: [],

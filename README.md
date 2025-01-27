@@ -9,6 +9,7 @@ STARKNET_PRIVATE_KEY=<your_private_key_here>
 STARKNET_RPC_URL=<your_rpc_url_here>
 PINATA_JWT=<your_pinata_jwt_here>
 PINATA_GATEWAY_URL=<your_pinata_gateway_url_here>
+ANTHROPIC_API_KEY=<your_anthropic_api_key_here>
 ```
 
 In the file `labels.ts` set the constant `DEPLOYED_CONTRACT` with the address of the smart contract deployed on Starknet.

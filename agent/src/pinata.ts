@@ -1,5 +1,4 @@
 import { PinataSDK } from "pinata-web3";
-import { elizaLogger } from "@elizaos/core";
 
 const pinata = new PinataSDK({
     pinataJwt: process.env.PINATA_JWT,
@@ -11,6 +10,5 @@ export const uploadJson = async (name: string, description: string) => {
         name,
         description,
     });
-    elizaLogger.success(`Uploaded JSON to IPFS with hash: ${IpfsHash}`);
     return IpfsHash;
 };

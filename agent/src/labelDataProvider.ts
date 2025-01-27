@@ -10,9 +10,11 @@ import {
     isDataComplete,
     LabelData,
     emptyLabelData,
+    MintTxData,
+    emptyMintTx,
 } from "./labelDataEvaluator.ts";
+import { getBlockExplorerUrl } from "./labels.ts";
 
-// Field-specific guidance
 const FIELD_GUIDANCE = {
     name: {
         description: "Label's name",
@@ -28,7 +30,7 @@ const FIELD_GUIDANCE = {
             "Extract only when user directly states the label's description",
     },
     recipient: {
-        description: "Recipient's Ethereum address of the label",
+        description: "Recipient's Starknet address for the label",
         valid: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e, 0x53d284357ec70cE289D6D64134DfAc8E511c8a3D, 0x66f820a414680B5bcda5eECA5dea238543F42054",
         invalid:
             "email addresses, phone numbers, home addresses, or other types of addresses",
@@ -37,7 +39,6 @@ const FIELD_GUIDANCE = {
     },
 };
 
-// Helper functions
 const getCacheKey = (runtime: IAgentRuntime, userId: string): string => {
     return `${runtime.character.name}/${userId}/data`;
 };
@@ -53,8 +54,7 @@ const getMissingFields = (
     return fields.filter((field) => !data[field]);
 };
 
-// Provider Implementation
-export const userDataProvider: Provider = {
+export const labelDataProvider: Provider = {
     get: async (
         runtime: IAgentRuntime,
         message: Memory,
@@ -68,7 +68,6 @@ export const userDataProvider: Provider = {
 
             let response = "Label Information Status:\n\n";
 
-            // Known Information
             const knownFields = Object.entries(cachedData)
                 .filter(
                     ([key, value]) =>
@@ -85,7 +84,6 @@ export const userDataProvider: Provider = {
                 response += "\n\n";
             }
 
-            // Missing Information and Guidance
             const missingFields = getMissingFields(cachedData);
 
             if (missingFields.length > 0) {
@@ -128,8 +126,7 @@ export const userDataProvider: Provider = {
     },
 };
 
-// Add new completion signal provider
-export const labelDataCompletionProvider: Provider = {
+export const txLabelMintedProvider: Provider = {
     get: async (
         runtime: IAgentRuntime,
         message: Memory,
@@ -137,17 +134,25 @@ export const labelDataCompletionProvider: Provider = {
     ): Promise<string> => {
         try {
             const cacheKey = getCacheKey(runtime, message.userId);
-            const cachedData = (await runtime.cacheManager.get<LabelData>(
-                cacheKey
-            )) || { ...emptyLabelData };
+            const mintTxCachedData =
+                (await runtime.cacheManager.get<MintTxData>(cacheKey)) || {
+                    ...emptyMintTx,
+                };
+            let response = "";
 
-            // Only return the code if all data is complete
-            /* if (isDataComplete(cachedData)) {
-                return "If you haven't already told the user, tell them that you are minting the new label. Prioritize it if it's not found in the recent conversation.";
-            } */
+            if (
+                mintTxCachedData.txHash &&
+                mintTxCachedData.txHash.trim() !== ""
+            ) {
+                const blockExplorerUrl = await getBlockExplorerUrl();
+                elizaLogger.log("Block explorer URL:", blockExplorerUrl);
+                const txUrl = `${blockExplorerUrl}${mintTxCachedData.txHash}`;
+                response += `The label has been created successfully!\n`;
+                response += `The transaction hash is ${txUrl}\n`;
+                response += `The transaction URL on the Starknet block explorer is: ${txUrl}`;
+            }
 
-            // Return empty string if data collection is incomplete
-            return "";
+            return response;
         } catch (error) {
             elizaLogger.error("Error in labelDataCompletionProvider:", error);
             return "";
