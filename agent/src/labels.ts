@@ -1,8 +1,8 @@
 import { Account, RpcProvider, Contract } from "starknet";
 import labelsAbi from "./labels.json" with { type: "json" };
 
-const DEPLOYED_CONTRACT =
-    "0x062217de4d51800c4c627d98bf820d9b6d16a1c4d8cd5f0f91645bf8f22bab5e";
+const DEPLOYED_CONTRACT = "0x03e4799e71ced5248454932b3f35f291e37621eddaea436ba3eea17c8674aeb2"; //MAINNET
+    // "0x062217de4d51800c4c627d98bf820d9b6d16a1c4d8cd5f0f91645bf8f22bab5e"; SEPOLIA
 
 enum StarknetChainId {
     MAIN = "0x534e5f4d41494e",
@@ -29,11 +29,9 @@ labelsContract.connect(account);
 
 export const mintLabel = async (recipient: string, uri: string) => {
     const mintCall = labelsContract.populate("mint_item", { recipient, uri });
-    const { transaction_hash: txHash } = await account.execute(
-        mintCall /* , {
+    const { transaction_hash: txHash } = await account.execute(mintCall/* , {
         version: 3,
-    } */
-    );
+    } */);
     await provider.waitForTransaction(txHash);
     return txHash;
 };
