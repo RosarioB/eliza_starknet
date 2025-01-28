@@ -1,5 +1,7 @@
 # eliza_starknet
-An agentic application based on Eliza AI16Z that creates labels (NFTs) on Starknet. It includes the Starknet-Eliza plugin so it can transfer, swap and deploy tokens.
+This is the source code of the project Mintifi, the demo is on [Youtube](https://youtu.be/7uUhRoCQXn0?si=Ks7fcvZMmKEJcDPt).
+
+This is an agentic application based on Eliza AI16Z that creates labels (NFTs) on Starknet. It includes the Starknet-Eliza plugin so it can transfer, swap and deploy tokens.
 
 In the `.env` file put:
 
